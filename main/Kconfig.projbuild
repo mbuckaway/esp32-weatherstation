@@ -1,0 +1,185 @@
+menu "Sensor Configuration"
+
+    config UART_GPIO_TXD
+        int "Rain Sensor GPIO for UART TXD"
+        default 16
+        help
+            GPIO pin for UART TXD for the rain sensor
+
+    config UART_GPIO_RXD
+        int "Rain Sensor GPIO for UART RXD"
+        default 17
+        help
+            GPIO pin for UART RXD for the Rain sensor
+
+    config RAIN_MCLR_GPIO
+        int "Rain Sensor GPIO for MCLR (Reset) Pin"
+        default 18
+        help
+            GPIO pin for MCLR line for the Rain sensor
+
+    config DHT22_ENABLE
+        bool "DHT22 Enable"
+        default 0
+        help
+            Enable the DHT22 sensor
+
+    config GPIO_OUTPUT_IO_DHT22
+        int "DHT22 GPIO"
+        depends on DHT22_ENABLE
+        default 27
+        help
+            GPIO number for the DHT22 sensor
+
+    config DS18X20_GPIO_PIN
+        int "DS18X20 PIN"
+        default 26
+        help
+            gpio pin for the 1-wire Dallas DS18X20 temperature sensor
+            for ground temperature
+
+    config I2C_GPIO_SDA
+        int "I2C Bus SDA GPIO"
+        default 14
+        help
+            GPIO number for I2C sensor bus SDA. Used for BMP280, BH1750, and other sensors
+
+    config I2C_GPIO_SCL
+        int "I2C Bus SCL GPIO"
+        default 12
+        help
+            GPIO number for I2C sensor bus SCL. Used for BMP280, BH1750, and other sensors
+
+    config ADC_MULTISAMPLING_COUNT
+        int "ADC Multi-sampling Count"
+        default 16
+            help
+                Read the ADC this many times as a way of multisampling the ADC for a more accurate reading
+
+    choice MOISTURE_ADC_CHANNEL
+        bool "Moisture Sensor ADC1 Channel Num"
+        depends on IDF_TARGET_ESP32
+        default MOISTURE_ADC_CHANNEL_7
+        help
+            The channel of ADC1 used for the moisture sensor.
+
+        config MOISTURE_ADC_CHANNEL_0
+            bool "ADC Channel 0 (GPIO 36)"
+        config MOISTURE_ADC_CHANNEL_1
+            bool "ADC Channel 1 (GPIO 37)"
+        config MOISTURE_ADC_CHANNEL_2
+            bool "ADC Channel 2 (GPIO 38)"
+        config MOISTURE_ADC_CHANNEL_3
+            bool "ADC Channel 3 (GPIO 39)"
+        config MOISTURE_ADC_CHANNEL_4
+            bool "ADC Channel 4 (GPIO 32)"
+        config MOISTURE_ADC_CHANNEL_5
+            bool "ADC Channel 5 (GPIO 33)"
+        config MOISTURE_ADC_CHANNEL_6
+            bool "ADC Channel 6 (GPIO 34)"
+        config MOISTURE_ADC_CHANNEL_7
+            bool "ADC Channel 7 (GPIO 35)"
+    endchoice
+
+    choice MOISTURE_ADC_CHANNEL
+        bool "Moisture Sensor ADC1 Channel Num"
+        depends on IDF_TARGET_ESP32S2
+        default MOISTURE_ADC_CHANNEL_6
+        help
+            The channel of ADC1 used for the moisture sensor.
+
+        config MOISTURE_ADC_CHANNEL_0
+            bool "ADC Channel 0 (GPIO 1)"
+        config MOISTURE_ADC_CHANNEL_1
+            bool "ADC Channel 1 (GPIO 2)"
+        config MOISTURE_ADC_CHANNEL_2
+            bool "ADC Channel 2 (GPIO 3)"
+        config MOISTURE_ADC_CHANNEL_3
+            bool "ADC Channel 3 (GPIO 4)"
+        config MOISTURE_ADC_CHANNEL_4
+            bool "ADC Channel 4 (GPIO 5)"
+        config MOISTURE_ADC_CHANNEL_5
+            bool "ADC Channel 5 (GPIO 6)"
+        config MOISTURE_ADC_CHANNEL_6
+            bool "ADC Channel 6 (GPIO 7)"
+        config MOISTURE_ADC_CHANNEL_7
+            bool "ADC Channel 7 (GPIO 8)"
+        config MOISTURE_ADC_CHANNEL_8
+            bool "ADC Channel 8 (GPIO 9)"
+        config MOISTURE_ADC_CHANNEL_9
+            bool "ADC Channel 9 (GPIO 10)"
+    endchoice
+
+    config MOISTURE_ADC_CHANNEL
+        int
+        default 0 if MOISTURE_ADC_CHANNEL_0
+        default 1 if MOISTURE_ADC_CHANNEL_1
+        default 2 if MOISTURE_ADC_CHANNEL_2
+        default 3 if MOISTURE_ADC_CHANNEL_3
+        default 4 if MOISTURE_ADC_CHANNEL_4
+        default 5 if MOISTURE_ADC_CHANNEL_5
+        default 6 if MOISTURE_ADC_CHANNEL_6
+        default 7 if MOISTURE_ADC_CHANNEL_7
+        default 8 if MOISTURE_ADC_CHANNEL_8
+        default 9 if MOISTURE_ADC_CHANNEL_9
+
+endmenu
+
+menu "AWS Configuration"
+
+    config DEVICE_LOCATION_NAME
+        string "Thing Location (Glasglow/Synders)"
+        default "synders"
+        help
+            Device location name
+
+    config DEVICE_TYPE_NAME
+        string "Thing Type (weather/status)"
+        default "weather"
+        help
+            Type of device. Possible options are weather, or status.
+
+    config AWS_TOPIC
+        string "AWS IoT Master Topic"
+        default "tms/weather"
+        help
+            AWS IoT top level topic. The Client Id is appended to it.
+
+    choice AWS_CERT_SOURCE
+        prompt "AWS IoT Certificate Source"
+        default AWS_EMBEDDED_CERTS
+        help
+            AWS IoT requires loading of a device-specific certificate and private key,
+            and a common Root CA Certificate. These can be compiled into the example
+            app, or they can be loaded via the filesystem from an SD card.
+
+        config AWS_EMBEDDED_CERTS
+            bool "Embed into app"
+        config AWS_SDCARD_CERTS
+            bool "Load from SD card"
+            select AWS_FILESYSTEM_CERTS
+    endchoice
+
+    # Currently this is equivalent to AWS_SDCARD_CERTS,
+    # however eventually we want to support more filesystem
+    # sources (SPIFFS, etc.) So this hidden config item
+    # is selected whenever the item should load from filesystem.
+    config AWS_FILESYSTEM_CERTS
+        bool
+
+    config AWS_CERTIFICATE_PATH
+        string "Device Certificate Path"
+        depends on AWS_FILESYSTEM_CERTS
+        default "/sdcard/certificate.pem.crt"
+
+    config AWS_PRIVATE_KEY_PATH
+        string "Device Private Key Path"
+        depends on AWS_FILESYSTEM_CERTS
+        default "/sdcard/private.pem.key"
+
+    config AWS_ROOT_CA_PATH
+        string "Root CA Certificate Path"
+        depends on AWS_FILESYSTEM_CERTS
+        default "/sdcard/aws-root-ca.pem"
+
+endmenu

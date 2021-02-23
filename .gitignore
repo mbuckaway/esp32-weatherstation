@@ -1,0 +1,5 @@
+main/certs/*.pem.*
+sdkconfig
+sdkconfig.old
+build/
+dbpass.txt
